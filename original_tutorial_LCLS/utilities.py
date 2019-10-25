@@ -62,9 +62,15 @@ def read_settings(fn):
     skips = [np.arange(start, total_length + 1, skip_period), np.arange(start + 1, total_length + 1, skip_period), np.arange(start + data_period + 2, total_length + 1, skip_period)]   
     skips = np.concatenate([np.arange(start + 2)] + skips)
     test = pd.read_csv(fn, delim_whitespace=True, error_bad_lines=False, skiprows=skips.flatten(), header=None)
-    frame = pd.DataFrame(test.values[:, 0].reshape(total_steps, data_period), 
+    if (data_period) == (test.sort_values(by=[3]).values[data_period-1::total_steps, [2, 3]].shape[0]):
+        frame = pd.DataFrame(test.values[:, 0].reshape(total_steps, data_period), 
                          columns=pd.MultiIndex.from_arrays(np.flip(np.flip(test.sort_values(by=[3]).values[data_period-1::total_steps, [2, 3]].T, 0),1), names=['Element', 'Attribute']),
                          index=np.arange(total_steps))
+
+    else:
+        frame = pd.DataFrame(test.values[:, 0].reshape(total_steps, data_period))
+        print('Please add more "data_points" to cover all parameters changes. Still missing:')
+        print((data_period) - (test.sort_values(by=[3]).values[data_period-1::total_steps, [2, 3]].shape[0]))    
     return frame
 
 
